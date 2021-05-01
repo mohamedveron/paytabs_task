@@ -1,0 +1,82 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: Paytabs payments task
+components:
+  schemas:
+    Account:
+      type: object
+      required:
+        - id
+        - name
+        - balance
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        balance:
+          type: number
+
+    Transfer:
+      type: object
+      required:
+        - to
+        - from
+        - balance
+      properties:
+        to:
+          type: string
+        from:
+          type: string
+        balance:
+          type: number
+
+paths:
+  /accounts/transfer:
+    post:
+      summary: Create new Transfer
+      operationId: makeTransfer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Transfer'
+      responses:
+        '201':
+          description: Transfer is created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+        '400':
+          description: Bad request
+        '409':
+          description: Conflict in insertion
+        '500':
+          description: Internal server error
+
+  /accounts/:
+    get:
+      summary: Get all accounts
+      operationId: getAccounts
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Account'
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
