@@ -14,7 +14,7 @@ generate:
 
 test: generate
 	@echo :: run tests
-	go test -race
+	go test -v ./tests
 
 run: generate
 	@echo :: start the http server
