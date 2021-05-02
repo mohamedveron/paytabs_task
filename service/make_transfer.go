@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/mohamedveron/paytabs_task/domains"
 	"strconv"
+	"sync"
 )
 
 func (s *Service) MakeTransfer(from , to string, balance float32) error {
@@ -36,16 +37,32 @@ func (s *Service) MakeTransfer(from , to string, balance float32) error {
 		return errors.New("don't have enough money")
 	}
 
-	toBalance+= float64(balance)
-	newToBalance := fmt.Sprintf("%f", toBalance)
+	var wg sync.WaitGroup
+	wg.Add(1)
 
-	fromBalance-= float64(balance)
-	newFromBalance := fmt.Sprintf("%f", fromBalance)
+	go func() {
 
-	toAccount.Balance = newToBalance
-	fromAccount.Balance = newFromBalance
-	s.AccountsDB[to] = toAccount
-	s.AccountsDB[from] = fromAccount
+		defer wg.Done()
+
+		toBalance+= float64(balance)
+		newToBalance := fmt.Sprintf("%f", toBalance)
+
+		fromBalance-= float64(balance)
+		newFromBalance := fmt.Sprintf("%f", fromBalance)
+
+		toAccount.Balance = newToBalance
+		fromAccount.Balance = newFromBalance
+
+		s.mutex.Lock()
+
+		s.AccountsDB[to] = toAccount
+		s.AccountsDB[from] = fromAccount
+
+		s.mutex.Unlock()
+
+	}()
+
+	wg.Wait()
 
 	return nil
 }
